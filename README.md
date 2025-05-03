@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/mfydev-ghost-mcp-badge.png)](https://mseep.ai/app/mfydev-ghost-mcp)
+
 # Ghost MCP Server
 
 ## ‼️ Important Notice: Python to TypeScript Migration
