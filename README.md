@@ -32,6 +32,50 @@ To use this with MCP clients, for instance, Claude Desktop, add the following to
 }
 ```
 
+### Streamable HTTP transport
+
+By default the server speaks `stdio`. Set `MCP_TRANSPORT=http` to serve the
+[MCP Streamable HTTP](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http)
+transport instead, so multiple MCP clients (e.g. Hermes agents) can connect
+concurrently over a shared port:
+
+```bash
+MCP_TRANSPORT=http PORT=3210 GHOST_API_URL=https://yourblog.com \
+  GHOST_ADMIN_API_KEY=your_admin_api_key npm start
+```
+
+| Env var               | Default   | Purpose                                            |
+|-----------------------|-----------|----------------------------------------------------|
+| `MCP_TRANSPORT`       | `stdio`   | `stdio` (default) or `http`                        |
+| `PORT`                | `3210`    | HTTP listen port (when `MCP_TRANSPORT=http`)       |
+| `HOST`                | `0.0.0.0` | HTTP bind address (when `MCP_TRANSPORT=http`)      |
+| `GHOST_API_URL`       | —         | Ghost site URL (required)                          |
+| `GHOST_ADMIN_API_KEY` | —         | Admin API key `<24hex>:<64hex>` (required)         |
+| `GHOST_API_VERSION`   | `v5.0`    | Ghost Admin API version                            |
+
+The HTTP transport runs in **stateless mode** (no `Mcp-Session-Id` latch), so
+any number of clients may connect, disconnect, and reconnect without tripping
+an "already initialized" rejection. A liveness probe is served at `GET /health`.
+
+Clients connect to the endpoint at `http://<host>:<port>/mcp`, e.g.
+`hermes mcp add ghost --url http://127.0.0.1:3210/mcp`.
+
+### Docker
+
+A multi-stage image (build with devDeps → runtime with production deps only)
+is provided, serving Streamable HTTP on port `3210` by default:
+
+```bash
+docker build -t ghost-mcp .
+docker run -d --name ghost-mcp -p 3210:3210 \
+  -e GHOST_API_URL=https://yourblog.com \
+  -e GHOST_ADMIN_API_KEY=your_admin_api_key \
+  ghost-mcp
+```
+
+With Podman, pass the secrets via an `--env-file` (kept out of the image):
+`podman run -d --name ghost-mcp -p 3210:3210 --env-file .env ghost-mcp`.
+
 ## Available Resources
 
 The following Ghost CMS resources are available through this MCP server:
