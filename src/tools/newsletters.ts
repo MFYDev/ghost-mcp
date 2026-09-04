@@ -2,6 +2,8 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ghostApiClient } from "../ghostApi";
+import { toNewsletterSummary } from "../utils/summaries";
+import { textResult, browseEnvelope, toConfirmation } from "../utils/respond";
 
 // Parameter schemas as ZodRawShape (object literals)
 const browseParams = {
@@ -60,85 +62,55 @@ export function registerNewsletterTools(server: McpServer) {
   // Browse newsletters
   server.tool(
     "newsletters_browse",
+    "List newsletters as compact summaries (id, name, status, visibility, subscribe_on_signup, sort_order). Use newsletters_read with an id or slug for sender settings and display options. Check pagination.next for more pages.",
     browseParams,
     async (args, _extra) => {
-      const newsletters = await ghostApiClient.newsletters.browse(args);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(newsletters, null, 2),
-          },
-        ],
-      };
+      const { items, meta } = await ghostApiClient.newsletters.browse(args);
+      return textResult(browseEnvelope(items.map(toNewsletterSummary), meta));
     }
   );
 
   // Read newsletter
   server.tool(
     "newsletters_read",
+    "Fetch one newsletter by id or slug, with full detail including sender settings, display options, and font configuration.",
     readParams,
     async (args, _extra) => {
       const newsletter = await ghostApiClient.newsletters.read(args);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(newsletter, null, 2),
-          },
-        ],
-      };
+      return textResult(newsletter);
     }
   );
 
   // Add newsletter
   server.tool(
     "newsletters_add",
+    "Create a new newsletter. Returns a minimal confirmation {id,slug,status,updated_at}.",
     addParams,
     async (args, _extra) => {
       const newsletter = await ghostApiClient.newsletters.add(args);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(newsletter, null, 2),
-          },
-        ],
-      };
+      return textResult(toConfirmation(newsletter));
     }
   );
 
   // Edit newsletter
   server.tool(
     "newsletters_edit",
+    "Update an existing newsletter by id. Returns a minimal confirmation {id,slug,status,updated_at}.",
     editParams,
     async (args, _extra) => {
       const newsletter = await ghostApiClient.newsletters.edit(args);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(newsletter, null, 2),
-          },
-        ],
-      };
+      return textResult(toConfirmation(newsletter));
     }
   );
 
   // Delete newsletter
   server.tool(
     "newsletters_delete",
+    "Permanently delete a newsletter by id. This cannot be undone.",
     deleteParams,
     async (args, _extra) => {
       await ghostApiClient.newsletters.delete(args);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Newsletter with id ${args.id} deleted.`,
-          },
-        ],
-      };
+      return textResult(`Newsletter with id ${args.id} deleted.`);
     }
   );
 }

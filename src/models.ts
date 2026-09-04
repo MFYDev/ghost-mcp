@@ -10,6 +10,19 @@ export interface Post {
     excerpt?: string | null;
 }
 
+// Ghost page data model.
+export interface Page {
+    id: string;
+    title: string;
+    status: string;
+    url: string;
+    created_at: string;
+    html?: string | null;
+    plaintext?: string | null;
+    excerpt?: string | null;
+    show_title_and_feature_image?: boolean | null;
+}
+
 // Ghost user data model.
 export interface User {
     id: string;

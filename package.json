@@ -24,12 +24,10 @@
     "type": "commonjs",
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.10.1",
-        "@tryghost/admin-api": "^1.13.13",
         "axios": "^1.8.4",
         "zod": "^3.24.3"
     },
     "devDependencies": {
-        "@types/axios": "^0.9.36",
         "@types/node": "^22.14.1",
         "typescript": "^5.8.3"
     }
